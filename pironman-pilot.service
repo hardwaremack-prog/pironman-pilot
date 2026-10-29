@@ -1,0 +1,14 @@
+[Unit]
+Description=Pironman Pilot - Pironman 5 MAX control service
+After=multi-user.target pironman5.service
+
+[Service]
+Type=simple
+EnvironmentFile=-/etc/default/pironman-pilot
+ExecStart=/usr/bin/python3 /opt/pironman-pilot/pilot.py
+Restart=on-failure
+RestartSec=3
+User=root
+
+[Install]
+WantedBy=multi-user.target

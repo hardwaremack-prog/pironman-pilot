@@ -1,0 +1,35 @@
+#!/bin/bash
+# Opens the Pironman Pilot window - only after confirming Pilot itself is answering
+PILOT_PORT=47821
+[ -f /etc/default/pironman-pilot ] && . /etc/default/pironman-pilot
+URL="http://127.0.0.1:${PILOT_PORT}/"
+
+ok=""
+for i in $(seq 1 30); do
+  if curl -s --max-time 2 "${URL}pilot-id" 2>/dev/null | grep -q '"pironman-pilot"'; then ok=1; break; fi
+  sleep 0.5
+done
+
+if [ -z "$ok" ]; then
+  MSG="Pironman Pilot isn't answering on port ${PILOT_PORT}.
+
+Open a terminal and run:
+  sudo systemctl restart pironman-pilot
+  journalctl -u pironman-pilot -n 20
+
+If it says the port is in use, another app has it -
+re-run install.sh and Pilot will pick a free port."
+  if command -v zenity >/dev/null 2>&1; then zenity --error --title="Pironman Pilot" --text="$MSG" --width=420
+  elif command -v yad >/dev/null 2>&1; then yad --title="Pironman Pilot" --text="$MSG" --button=OK
+  else x-terminal-emulator -e bash -c "echo \"$MSG\"; read -p 'Press Enter to close'" 2>/dev/null || echo "$MSG"
+  fi
+  exit 1
+fi
+
+for b in chromium chromium-browser; do
+  if command -v "$b" >/dev/null 2>&1; then
+    exec "$b" --app="$URL" --window-size=1120,800 --class=PironmanPilot \
+         --user-data-dir="$HOME/.config/pironman-pilot-window" >/dev/null 2>&1
+  fi
+done
+exec xdg-open "$URL"

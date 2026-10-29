@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Pironman Pilot
+Comment=Control the Pironman 5 MAX OLED, fans, LEDs and overclocking
+Exec=/opt/pironman-pilot/pilot-open
+Icon=pironman-pilot
+Terminal=false
+Categories=System;Settings;HardwareSettings;
+StartupWMClass=PironmanPilot

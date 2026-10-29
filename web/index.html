@@ -1,0 +1,762 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pironman Pilot</title>
+<link rel="icon" href="/icon.svg">
+<style>
+:root{
+  --bg:#0b0e13; --panel:#131820; --panel2:#1a2029; --line:#262e3a; --text:#e8edf4; --dim:#8794a6;
+  --accent:#3aa0ff; --good:#3ddc84; --warn:#ffb020; --bad:#ff4d5e; --radius:14px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--text);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+body{min-height:100vh;background:
+  radial-gradient(900px 400px at 85% -10%, color-mix(in srgb,var(--accent) 22%,transparent), transparent 70%),
+  var(--bg)}
+header{display:flex;align-items:center;gap:14px;padding:16px 20px 8px;max-width:1150px;margin:0 auto}
+header img{width:40px;height:40px}
+header h1{font-size:20px;margin:0;letter-spacing:.3px}
+header .sub{color:var(--dim);font-size:13px}
+.chips{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.chip{background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:5px 12px;font-size:13px;white-space:nowrap}
+.chip b{font-variant-numeric:tabular-nums}
+nav{display:flex;gap:6px;padding:8px 20px;max-width:1150px;margin:0 auto;overflow-x:auto}
+nav button{background:transparent;border:1px solid transparent;color:var(--dim);padding:9px 16px;border-radius:10px;font:inherit;font-weight:600;cursor:pointer;white-space:nowrap}
+nav button:hover{color:var(--text)}
+nav button.on{background:var(--panel);border-color:var(--line);color:var(--text);box-shadow:inset 0 -2px 0 var(--accent)}
+main{max-width:1150px;margin:0 auto;padding:10px 20px 60px}
+section.tab{display:none}
+section.tab.on{display:block;animation:fade .2s ease}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+.grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(250px,1fr))}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px}
+.card h2{font-size:15px;margin:0 0 4px}
+.card h2 small{color:var(--dim);font-weight:500;font-size:12px;margin-left:6px}
+.card p.help{color:var(--dim);font-size:13px;margin:2px 0 12px}
+.span2{grid-column:span 2}
+@media (max-width:620px){.span2{grid-column:auto}.chips{display:none}}
+.stat{display:flex;flex-direction:column;gap:2px}
+.stat .k{color:var(--dim);font-size:12px;text-transform:uppercase;letter-spacing:.8px}
+.stat .v{font-size:30px;font-weight:700;font-variant-numeric:tabular-nums}
+.stat .v small{font-size:15px;color:var(--dim);font-weight:600;margin-left:3px}
+.bar{height:6px;background:var(--panel2);border-radius:4px;overflow:hidden;margin-top:8px}
+.bar i{display:block;height:100%;background:var(--accent);width:0;transition:width .6s}
+canvas.spark{width:100%;height:150px;display:block}
+.row{display:flex;align-items:center;gap:10px;margin:10px 0;flex-wrap:wrap}
+.row label{min-width:110px;color:var(--dim);font-size:13px}
+.row label.switch{min-width:0}
+.row .val{min-width:44px;text-align:right;font-variant-numeric:tabular-nums}
+input[type=range]{flex:1;min-width:140px;accent-color:var(--accent)}
+input[type=number],input[type=text],select,textarea{background:var(--panel2);border:1px solid var(--line);color:var(--text);border-radius:9px;padding:8px 10px;font:inherit}
+input[type=number]{width:90px}
+textarea{width:100%;min-height:60px;resize:vertical}
+input[type=color]{width:48px;height:36px;border:1px solid var(--line);border-radius:9px;background:var(--panel2);padding:3px;cursor:pointer}
+.btn{background:var(--accent);color:#04121f;border:0;border-radius:10px;padding:10px 16px;font:inherit;font-weight:700;cursor:pointer}
+.btn:hover{filter:brightness(1.1)}
+.btn.ghost{background:transparent;color:var(--text);border:1px solid var(--line)}
+.btn.warn{background:var(--warn)}
+.btn.bad{background:var(--bad);color:#fff}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.seg{display:inline-flex;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:3px;flex-wrap:wrap;gap:2px}
+.seg button{background:transparent;border:0;color:var(--dim);padding:7px 12px;border-radius:7px;font:inherit;font-weight:600;cursor:pointer}
+.seg button.on{background:var(--accent);color:#04121f}
+.switch{position:relative;width:46px;height:26px;flex:none}
+.switch input{opacity:0;width:0;height:0}
+.switch span{position:absolute;inset:0;background:var(--panel2);border:1px solid var(--line);border-radius:999px;cursor:pointer;transition:.2s}
+.switch span:before{content:"";position:absolute;width:20px;height:20px;left:2px;top:2px;background:var(--dim);border-radius:50%;transition:.2s}
+.switch input:checked+span{background:var(--accent);border-color:var(--accent)}
+.switch input:checked+span:before{transform:translateX(20px);background:#fff}
+.swatches{display:flex;gap:7px;flex-wrap:wrap}
+.swatches button{width:28px;height:28px;border-radius:50%;border:2px solid var(--line);cursor:pointer}
+.leds{display:flex;gap:14px;justify-content:center;padding:18px 0 8px}
+.leds i{width:26px;height:26px;border-radius:50%;background:#222;box-shadow:0 0 0 2px #0006 inset}
+.pill{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;font-weight:700}
+.pill.good{background:color-mix(in srgb,var(--good) 20%,transparent);color:var(--good)}
+.pill.warn{background:color-mix(in srgb,var(--warn) 20%,transparent);color:var(--warn)}
+.pill.bad{background:color-mix(in srgb,var(--bad) 20%,transparent);color:var(--bad)}
+.pill.dim{background:var(--panel2);color:var(--dim)}
+.note{background:var(--panel2);border:1px solid var(--line);border-left:3px solid var(--warn);border-radius:10px;padding:10px 12px;font-size:13px;color:var(--dim);margin:10px 0}
+.note.info{border-left-color:var(--accent)}
+.note.good{border-left-color:var(--good)}
+.note b{color:var(--text)}
+.presets{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:8px 0 4px}
+.preset{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:12px;cursor:pointer;text-align:left;color:var(--text);font:inherit}
+.preset.on{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}
+.preset b{display:block;font-size:16px}
+.preset span{color:var(--dim);font-size:12px}
+.oled{background:#000;border-radius:10px;padding:10px;border:1px solid var(--line);display:inline-block}
+.oled img{width:256px;height:128px;image-rendering:pixelated;display:block;filter:drop-shadow(0 0 3px #7ff3)}
+.oled.small img{width:128px;height:64px}
+.pages{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px}
+.pagecard{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:10px;display:flex;flex-direction:column;gap:8px;cursor:pointer}
+.pagecard.on{border-color:var(--accent)}
+.pagecard .oled{padding:6px}
+.pagecard span{font-size:13px;display:flex;gap:8px;align-items:center}
+table.kv{width:100%;border-collapse:collapse;font-size:14px}
+table.kv td{padding:6px 0;border-bottom:1px solid var(--line)}
+table.kv td:last-child{text-align:right;font-variant-numeric:tabular-nums}
+#toast{opacity:0;pointer-events:none;position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(120px);background:var(--panel2);border:1px solid var(--line);padding:11px 18px;border-radius:12px;transition:.25s;z-index:9;max-width:90vw;box-shadow:0 10px 30px #0008}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+#toast.err{border-color:var(--bad)}
+.progress{height:10px;background:var(--panel2);border-radius:6px;overflow:hidden;margin:10px 0}
+.progress i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--warn));width:0;transition:width .8s}
+.sidegrid{}
+@media (max-width:760px){.sidegrid{grid-template-columns:1fr!important}}
+.curve{display:grid;grid-template-columns:auto 1fr 1fr;gap:6px 12px;align-items:center;font-size:13px}
+.hidden{display:none!important}
+.offline{position:fixed;inset:0;background:#000c;display:flex;align-items:center;justify-content:center;z-index:20;text-align:center;padding:30px}
+</style>
+</head>
+<body>
+<header>
+  <img src="/icon.svg" alt="">
+  <div>
+    <h1>Pironman Pilot</h1>
+    <div class="sub" id="model">Pironman 5 MAX control center</div>
+  </div>
+  <div class="chips">
+    <div class="chip">🌡 <b id="c-temp">--</b></div>
+    <div class="chip">⚡ <b id="c-freq">--</b></div>
+    <div class="chip">🌀 <b id="c-rpm">--</b></div>
+    <div class="chip" id="c-health">…</div>
+  </div>
+</header>
+<nav>
+  <button data-tab="overview" class="on">Overview</button>
+  <button data-tab="lights">Lights</button>
+  <button data-tab="fans">Fans</button>
+  <button data-tab="screen">OLED Screen</button>
+  <button data-tab="oc">Overclock</button>
+</nav>
+<main>
+
+<!-- ================= OVERVIEW ================= -->
+<section class="tab on" id="tab-overview">
+  <div id="p5missing" class="note hidden"><b>SunFounder's pironman5 software isn't installed.</b> Live stats, the CPU fan, the custom OLED pages and overclocking still work, but the LEDs, side fans and built-in OLED pages need it. See the README for the one-time install.</div>
+  <div class="grid">
+    <div class="card stat"><span class="k">CPU temperature</span><span class="v" id="o-temp">--</span><div class="bar"><i id="o-temp-bar"></i></div></div>
+    <div class="card stat"><span class="k">CPU clock</span><span class="v" id="o-freq">--</span><div class="bar"><i id="o-freq-bar"></i></div></div>
+    <div class="card stat"><span class="k">CPU load</span><span class="v" id="o-cpu">--</span><div class="bar"><i id="o-cpu-bar"></i></div></div>
+    <div class="card stat"><span class="k">Memory</span><span class="v" id="o-mem">--</span><div class="bar"><i id="o-mem-bar"></i></div></div>
+    <div class="card span2">
+      <h2>Last 3 minutes <small>temperature (line) · clock speed (fill)</small></h2>
+      <canvas class="spark" id="spark"></canvas>
+    </div>
+    <div class="card">
+      <h2>Cooling & power</h2>
+      <table class="kv">
+        <tr><td>Tower (CPU) fan</td><td id="o-rpm">--</td></tr>
+        <tr><td>Fan level</td><td id="o-level">--</td></tr>
+        <tr><td>Side RGB fans</td><td id="o-side">--</td></tr>
+        <tr><td>Core voltage</td><td id="o-volts">--</td></tr>
+        <tr><td>Chip power (approx.)</td><td id="o-power">--</td></tr>
+      </table>
+    </div>
+    <div class="card">
+      <h2>Health</h2>
+      <table class="kv">
+        <tr><td>Power supply</td><td id="h-uv">--</td></tr>
+        <tr><td>Thermal throttling</td><td id="h-th">--</td></tr>
+        <tr><td>Overclock</td><td id="h-oc">--</td></tr>
+        <tr><td>IP address</td><td id="h-ip">--</td></tr>
+        <tr><td>Uptime</td><td id="h-up">--</td></tr>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ================= LIGHTS ================= -->
+<section class="tab" id="tab-lights">
+  <div class="grid">
+    <div class="card span2">
+      <h2>Case RGB LEDs <small>WS2812 strip on the IO board</small></h2>
+      <div class="leds" id="ledPreview"><i></i><i></i><i></i><i></i></div>
+      <div class="row"><label>LEDs on</label><label class="switch"><input type="checkbox" id="l-enable"><span></span></label></div>
+      <div class="row"><label>Colour</label><input type="color" id="l-color" value="#3aa0ff">
+        <div class="swatches" id="swatches"></div></div>
+      <div class="row"><label>Effect</label><div class="seg" id="l-style"></div></div>
+      <div class="row"><label>Brightness</label><input type="range" id="l-bright" min="0" max="100"><span class="val" id="l-bright-v"></span></div>
+      <div class="row"><label>Speed</label><input type="range" id="l-speed" min="0" max="100"><span class="val" id="l-speed-v"></span></div>
+      <div class="row"><label>LED count</label><input type="number" id="l-count" min="1" max="200"> <span class="help" style="color:var(--dim);font-size:13px">4 built in — raise it if you add a strip to RGB OUT</span></div>
+      <div class="row"><button class="btn" id="l-apply">Apply lights</button></div>
+    </div>
+    <div class="card">
+      <h2>Side-fan LEDs</h2>
+      <p class="help">The two RGB fans' own lights (GPIO5).</p>
+      <div class="seg" id="l-fanled">
+        <button data-v="on">Always on</button><button data-v="follow">Follow fan</button><button data-v="off">Off</button>
+      </div>
+      <div class="row"><button class="btn" id="l-fanled-apply">Apply</button></div>
+      <div class="note info">“Follow fan” lights them only while the side fans are spinning.</div>
+    </div>
+    <div class="card">
+      <h2>Quick scenes</h2>
+      <p class="help">One tap, applied straight away.</p>
+      <div class="presets" id="scenes"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= FANS ================= -->
+<section class="tab" id="tab-fans">
+  <div class="grid">
+    <div class="card span2" style="grid-column:1/-1">
+      <h2>🤫 Make it quieter</h2>
+      <p class="help">Fans spin because of heat. The quietest setup slows the fans down <i>and</i> makes less heat.</p>
+      <div class="row">
+        <button class="btn" id="f-silent">One-tap silent setup</button>
+        <span style="color:var(--dim);font-size:13px">Whisper tower curve + quietest side-fan setting + turbo off (reboot to finish)</span>
+      </div>
+      <div class="row"><label>CPU speed limit</label>
+        <div class="seg" id="f-limit">
+          <button data-v="0">Full speed</button><button data-v="2200">2.2 GHz</button><button data-v="2000">2.0 GHz</button>
+          <button data-v="1800">1.8 GHz</button><button data-v="1500">1.5 GHz</button>
+        </div>
+      </div>
+      <p class="help" style="margin-bottom:0">Instant, no reboot. 1.8 GHz still feels quick for desktop, web and VNC, but runs much cooler — so the fans barely come on. Pick “Full speed” before gaming or a stability test.</p>
+    </div>
+    <div class="card">
+      <h2>Tower cooler fan <small>Pi 5 fan header</small></h2>
+      <div class="stat"><span class="k">Right now</span><span class="v" id="f-rpm">--</span></div>
+      <div class="bar"><i id="f-level-bar"></i></div>
+      <div class="row" style="margin-top:16px"><label>Turbo cooling</label><label class="switch"><input type="checkbox" id="f-turbo"><span></span></label></div>
+      <p class="help">Locks the tower fan at 100% instantly — great while gaming, compiling or stress testing. No reboot needed.</p>
+    </div>
+    <div class="card span2">
+      <h2>Tower fan curve <small>when the fan speeds up</small></h2>
+      <div class="presets" id="f-presets"></div>
+      <div id="f-curve-note"></div>
+      <div id="f-custom" class="hidden">
+        <div class="curve" id="f-curve"></div>
+      </div>
+      <div class="row"><button class="btn" id="f-curve-apply">Save curve</button> <span style="color:var(--dim);font-size:13px">Takes effect after a reboot.</span></div>
+    </div>
+    <div class="card" style="grid-column:1/-1">
+      <h2>Side RGB fans <small>the two fans on the side panel · controlled together</small></h2>
+      <div class="presets" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr))">
+        <button class="preset" data-sc="pironman"><b>On/off by temperature</b><span>SunFounder's modes. Fans are either full speed or off.</span></button>
+        <button class="preset" data-sc="pilot"><b>Speed curve</b><span>Pilot runs them at partial speed — quiet when cool, faster as it heats up. Changes apply instantly.</span></button>
+      </div>
+
+      <div id="side-p5">
+        <p class="help" style="margin-top:12px"><b style="color:var(--text)">“Always on” (the case's default) is the loudest; “Quiet” keeps them silent until 70°C.</b></p>
+        <div class="presets" id="f-gpio"></div>
+        <div class="row"><button class="btn" id="f-gpio-apply">Apply side-fan mode</button> <span id="f-side-now"></span></div>
+      </div>
+
+      <div id="side-pilot" class="hidden">
+        <div id="side-msg"></div>
+        <div style="display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:18px;margin-top:10px" class="sidegrid">
+          <div>
+            <div class="presets" id="sc-presets"></div>
+            <div id="sc-custom" class="hidden"><div class="curve" id="sc-curve"></div></div>
+            <div class="row"><label>PWM speed</label>
+              <div class="seg" id="sc-hz"><button data-v="25">25 Hz</button><button data-v="50">50 Hz</button><button data-v="100">100 Hz</button><button data-v="1000">1 kHz</button></div>
+            </div>
+            <p class="help">If the fans tick or hum at low speed, try another PWM speed. 50 Hz suits most small fans.</p>
+            <div class="row"><button class="btn" id="sc-apply">Save curve</button></div>
+          </div>
+          <div>
+            <canvas id="sc-graph" style="width:100%;height:190px;display:block;background:var(--panel2);border:1px solid var(--line);border-radius:12px"></canvas>
+            <div class="row" style="justify-content:space-between"><span>Now: <b id="sc-now">--</b></span><span id="sc-method" style="color:var(--dim);font-size:13px"></span></div>
+            <div class="row"><label>Try a speed</label><input type="range" id="sc-try" min="0" max="100" step="5" value="30"><span class="val" id="sc-try-v">30%</span><button class="btn ghost" id="sc-try-go">Run 10 s</button></div>
+            <p class="help">Use this to find the lowest speed your fans still turn at, then make that your first curve point.</p>
+            <div class="row"><button class="btn ghost" id="sc-diag">Check side fans</button><button class="btn ghost hidden" id="sc-copy">Copy report</button></div>
+            <pre id="sc-report" class="hidden" style="white-space:pre-wrap;font-size:12px;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:10px;max-height:300px;overflow:auto;color:var(--dim)"></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= SCREEN ================= -->
+<section class="tab" id="tab-screen">
+  <div class="grid">
+    <div class="card span2">
+      <h2>What runs the screen?</h2>
+      <div class="presets">
+        <button class="preset" data-mode="pironman"><b>SunFounder pages</b><span>The case's standard CPU/RAM/disk/IP screens.</span></button>
+        <button class="preset" data-mode="pilot"><b>Pilot custom pages</b><span>Big temperature, overclock speed, clock, your own text — you pick.</span></button>
+      </div>
+      <div id="oledErr" class="note hidden"></div>
+    </div>
+
+    <div class="card span2" id="s-pironman">
+      <h2>SunFounder screen settings</h2>
+      <div class="row"><label>Screen on</label><label class="switch"><input type="checkbox" id="s-enable"><span></span></label></div>
+      <div class="row"><label>Rotation</label><div class="seg" id="s-rot"><button data-v="0">Normal</button><button data-v="180">Upside down</button></div></div>
+      <div class="row"><label>Sleep after</label><select id="s-sleep">
+        <option value="0">Never</option><option value="30">30 s</option><option value="60">1 min</option><option value="300">5 min</option><option value="600">10 min</option><option value="1800">30 min</option></select>
+        <span style="color:var(--dim);font-size:13px">a tap on the case wakes it (vibration switch)</span></div>
+      <div class="row"><label>Temp unit</label><div class="seg" id="s-unit"><button data-v="C">°C</button><button data-v="F">°F</button></div></div>
+      <div class="row"><button class="btn" id="s-apply">Apply screen settings</button></div>
+    </div>
+
+    <div class="card span2 hidden" id="s-pilot">
+      <h2>Custom pages <small>tap to include · they rotate on the case screen</small></h2>
+      <div class="pages" id="s-pages"></div>
+      <div class="row"><label>Your text</label><input type="text" id="s-text" maxlength="120" style="flex:1"></div>
+      <div class="row"><label>Switch every</label><input type="range" id="s-int" min="2" max="30"><span class="val" id="s-int-v"></span></div>
+      <div class="row"><label>Brightness</label><input type="range" id="s-con" min="1" max="255"><span class="val" id="s-con-v"></span></div>
+      <div class="row"><label>Rotation</label><div class="seg" id="s-prot"><button data-v="0">Normal</button><button data-v="180">Upside down</button></div></div>
+      <div class="row"><label>Temp unit</label><div class="seg" id="s-punit"><button data-v="C">°C</button><button data-v="F">°F</button></div></div>
+      <div class="row"><button class="btn" id="s-papply">Save pages</button></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= OVERCLOCK ================= -->
+<section class="tab" id="tab-oc">
+  <div id="oc-banner"></div>
+  <div class="grid">
+    <div class="card span2">
+      <h2>Pick a speed <small>Pi 5 stock is 2.4 GHz</small></h2>
+      <div class="presets" id="oc-presets"></div>
+      <div class="row"><label>CPU clock</label><input type="range" id="oc-arm" min="1500" max="3200" step="50"><span class="val" id="oc-arm-v" style="min-width:80px"></span></div>
+      <div class="row"><label>GPU clock</label><input type="range" id="oc-gpu" min="500" max="1200" step="10"><span class="val" id="oc-gpu-v" style="min-width:80px"></span></div>
+      <div class="row"><label>Voltage boost</label><input type="range" id="oc-ovd" min="0" max="80000" step="5000"><span class="val" id="oc-ovd-v" style="min-width:80px"></span></div>
+      <div id="oc-warn"></div>
+      <div class="row">
+        <button class="btn" id="oc-test">Safe test boot ▸ reboot</button>
+        <button class="btn ghost" id="oc-direct">Apply without safety net</button>
+        <button class="btn ghost" id="oc-stock">Back to stock</button>
+      </div>
+      <div class="note info"><b>How the safe test works:</b> Pilot writes your settings to a one-time boot file and reboots into it. If it boots, you run the stability test and press <b>Keep</b>. If it freezes or won't boot, just unplug and replug the power — the Pi comes back on its normal settings automatically.</div>
+    </div>
+    <div class="card">
+      <h2>Right now</h2>
+      <table class="kv">
+        <tr><td>Max CPU clock (running)</td><td id="oc-run-arm">--</td></tr>
+        <tr><td>GPU clock (running)</td><td id="oc-run-gpu">--</td></tr>
+        <tr><td>Voltage boost (running)</td><td id="oc-run-ovd">--</td></tr>
+        <tr><td>Saved in config.txt</td><td id="oc-conf">--</td></tr>
+        <tr><td>Core voltage</td><td id="oc-volts">--</td></tr>
+        <tr><td>Temperature</td><td id="oc-temp">--</td></tr>
+      </table>
+      <div class="row"><button class="btn ghost" id="oc-reboot">Reboot now</button></div>
+    </div>
+    <div class="card span2">
+      <h2>Stability test <small>loads all 4 cores and checks the maths</small></h2>
+      <p class="help">Every core repeats the same calculation thousands of times. A wrong answer means the overclock is too high. Also watches heat, throttling and power.</p>
+      <div class="row">
+        <div class="seg" id="t-dur"><button data-v="60">1 min</button><button data-v="180">3 min</button><button data-v="600">10 min</button><button data-v="1200">20 min</button></div>
+        <button class="btn" id="t-start">Start test</button>
+        <button class="btn bad hidden" id="t-stop">Stop</button>
+      </div>
+      <div class="progress"><i id="t-prog"></i></div>
+      <div id="t-out" style="color:var(--dim);font-size:14px">Not run yet.</div>
+    </div>
+  </div>
+</section>
+</main>
+<div id="toast"></div>
+<div class="offline hidden" id="offline"><div><h2>Reconnecting…</h2><p style="color:var(--dim)">The Pilot service isn't answering. If you just rebooted, this page reconnects by itself.</p></div></div>
+
+<script>
+const TOKEN = "__PILOT_TOKEN__";
+const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+let S = null, formsReady = false, ocSel = null, fanSel = null, gpioSel = null, failCount = 0;
+
+async function api(path, body){
+  const r = await fetch(path, {method: body!==undefined ? "POST" : "GET",
+    headers: {"X-Pilot-Token": TOKEN, "Content-Type": "application/json"},
+    body: body!==undefined ? JSON.stringify(body) : undefined});
+  let j = {}; try { j = await r.json(); } catch(e){}
+  if(!r.ok || j.ok === false) throw new Error(j.error || r.statusText);
+  return j;
+}
+function toast(msg, err){ const t=$("#toast"); t.textContent=msg; t.className="show"+(err?" err":""); clearTimeout(t._h); t._h=setTimeout(()=>t.className=err?"err":"",3800); }
+async function act(btn, path, body, okMsg){
+  const old = btn && btn.innerHTML;
+  if(btn){ btn.disabled = true; btn.innerHTML = "Working…"; }
+  try { const r = await api(path, body); if(okMsg) toast(okMsg); await poll(true); return r; }
+  catch(e){ toast(e.message, true); }
+  finally { if(btn){ btn.disabled = false; btn.innerHTML = old; } }
+}
+function seg(el, value, onChange){
+  $$(el+" button").forEach(b => { b.classList.toggle("on", b.dataset.v == String(value));
+    b.onclick = () => { $$(el+" button").forEach(x=>x.classList.remove("on")); b.classList.add("on"); onChange && onChange(b.dataset.v); }; });
+}
+const segVal = el => ($(el+" button.on")||{}).dataset?.v;
+const C2 = t => t==null ? "--" : (S && S.settings.unit==="F" ? (t*9/5+32).toFixed(0)+"°F" : t.toFixed(1)+"°C");
+const pct = (el, v) => { $(el).style.width = Math.max(0, Math.min(100, v||0)) + "%"; };
+function upt(s){ if(!s) return "--"; const d=Math.floor(s/86400), h=Math.floor(s%86400/3600), m=Math.floor(s%3600/60); return (d?d+"d ":"")+h+"h "+m+"m"; }
+
+// ---------- tabs
+$$("nav button").forEach(b => b.onclick = () => {
+  $$("nav button").forEach(x=>x.classList.toggle("on", x===b));
+  $$("section.tab").forEach(s=>s.classList.toggle("on", s.id==="tab-"+b.dataset.tab));
+  if(b.dataset.tab==="screen") refreshPreviews();
+});
+
+// ---------- polling
+async function poll(forceForms){
+  try {
+    S = await api("/api/state");
+    failCount = 0; $("#offline").classList.add("hidden");
+    render();
+    if(!formsReady || forceForms){ fillForms(); formsReady = true; }
+  } catch(e){
+    if(++failCount > 2) $("#offline").classList.remove("hidden");
+  }
+}
+
+function render(){
+  const st = S.stats, th = st.throttle || {};
+  $("#model").textContent = S.model + " · v" + S.version;
+  const p5 = S.p5 || {};
+  if(p5.rgb_color){ const c = "#"+String(p5.rgb_color).replace("#",""); document.documentElement.style.setProperty("--accent", c); }
+  $("#p5missing").classList.toggle("hidden", S.p5_available);
+  // chips
+  $("#c-temp").textContent = C2(st.temp);
+  $("#c-freq").textContent = st.freq ? (st.freq/1000).toFixed(2)+" GHz" : "--";
+  $("#c-rpm").textContent = st.rpm!=null ? st.rpm+" rpm" : "--";
+  const bad = th.undervolt_now || th.throttled_now || th.capped_now;
+  $("#c-health").innerHTML = bad ? '<span class="pill bad">Throttling</span>' : '<span class="pill good">Healthy</span>';
+  // overview
+  $("#o-temp").innerHTML = C2(st.temp); pct("#o-temp-bar", ((st.temp||30)-30)/55*100);
+  $("#o-freq").innerHTML = st.freq ? st.freq+"<small>MHz</small>" : "--"; pct("#o-freq-bar", st.freq_max ? st.freq/st.freq_max*100 : 0);
+  $("#o-cpu").innerHTML = st.cpu!=null ? st.cpu.toFixed(0)+"<small>%</small>" : "--"; pct("#o-cpu-bar", st.cpu);
+  const m = st.mem || {};
+  $("#o-mem").innerHTML = m.used_mb!=null ? (m.used_mb/1024).toFixed(1)+"<small>/ "+(m.total_mb/1024).toFixed(1)+" GB</small>" : "--"; pct("#o-mem-bar", m.pct);
+  $("#o-rpm").textContent = st.rpm!=null ? st.rpm+" rpm" : "not detected";
+  $("#o-level").textContent = st.fan_level!=null ? `${st.fan_level} / ${st.fan_level_max}` + (S.settings.turbo_cooling ? " (turbo)" : "") : "--";
+  $("#o-side").innerHTML = st.side_duty!=null ? (st.side_duty>0 ? `<span class="pill good">${st.side_duty}%</span>` : '<span class="pill dim">Off</span>')
+    : st.side_fans_on==null ? "--" : st.side_fans_on ? '<span class="pill good">Spinning</span>' : '<span class="pill dim">Off</span>';
+  $("#o-volts").textContent = st.volts ? st.volts.toFixed(3)+" V" : "--";
+  $("#o-power").textContent = st.power_w ? st.power_w.toFixed(1)+" W" : "--";
+  $("#h-uv").innerHTML = th.undervolt_now ? '<span class="pill bad">Under-voltage now!</span>' : th.undervolt_past ? '<span class="pill warn">Dipped since boot</span>' : '<span class="pill good">Good</span>';
+  $("#h-th").innerHTML = (th.throttled_now||th.capped_now) ? '<span class="pill bad">Throttling now</span>' : (th.throttled_past||th.capped_past||th.softtemp_past) ? '<span class="pill warn">Happened since boot</span>' : '<span class="pill good">None</span>';
+  const r = S.oc.running;
+  $("#h-oc").innerHTML = r.arm && r.arm > 2400 ? `<span class="pill warn">${r.arm} MHz</span>` : '<span class="pill dim">Stock</span>';
+  $("#h-ip").textContent = st.ip || "--";
+  $("#h-up").textContent = upt(st.uptime_s);
+  drawSpark();
+  // fans
+  $("#f-rpm").innerHTML = st.rpm!=null ? st.rpm+"<small>rpm</small>" : "--";
+  pct("#f-level-bar", st.fan_level_max ? st.fan_level/st.fan_level_max*100 : 0);
+  renderSide();
+  $("#f-side-now").innerHTML = st.side_fans_on==null ? "" : "Now: " + (st.side_fans_on ? '<span class="pill good">Spinning</span>' : '<span class="pill dim">Off</span>');
+  // screen
+  const oe = S.oled.error;
+  $("#oledErr").classList.toggle("hidden", !oe && S.oled.pil && S.oled.i2c);
+  $("#oledErr").innerHTML = oe ? "<b>Screen problem:</b> "+oe : !S.oled.i2c ? "<b>I2C is off.</b> Run <code>sudo raspi-config nonint do_i2c 0</code> and reboot." : !S.oled.pil ? "<b>Pillow missing:</b> sudo apt install python3-pil" : "";
+  // overclock
+  renderOC(); renderTest();
+}
+
+function drawSpark(){
+  const c = $("#spark"), dpr = devicePixelRatio||1, w = c.clientWidth, h = c.clientHeight;
+  if(!w) return;
+  c.width = w*dpr; c.height = h*dpr; const g = c.getContext("2d"); g.scale(dpr,dpr);
+  const acc = getComputedStyle(document.documentElement).getPropertyValue("--accent").trim() || "#3aa0ff";
+  const T = S.hist.temp, F = S.hist.freq, n = Math.max(T.length, 2), maxF = Math.max(3200, ...F.filter(Boolean));
+  const x = i => i/(n-1)*w;
+  g.fillStyle = acc+"33"; g.beginPath(); g.moveTo(0,h);
+  F.forEach((v,i)=>g.lineTo(x(i), h - (v||0)/maxF*h*0.9)); g.lineTo(x(F.length-1),h); g.fill();
+  g.strokeStyle = "#ff8a3d"; g.lineWidth = 2; g.beginPath();
+  T.forEach((v,i)=>{ const y = h - ((v||30)-25)/65*h; i?g.lineTo(x(i),y):g.moveTo(x(i),y); }); g.stroke();
+  g.fillStyle = "#8794a6"; g.font = "11px system-ui";
+  [40,60,80].forEach(t=>{ const y=h-(t-25)/65*h; g.fillText(t+"°",4,y-2); g.fillStyle="#ffffff10"; g.fillRect(0,y,w,1); g.fillStyle="#8794a6"; });
+}
+
+// ---------- lights
+const SCENES = [
+  {n:"Ice blue", c:"3aa0ff", s:"breathing"}, {n:"Rainbow", c:"ff0000", s:"rainbow"},
+  {n:"Lava", c:"ff3300", s:"flow"}, {n:"Matrix", c:"00ff44", s:"breathing"},
+  {n:"Pink", c:"ff3dbe", s:"solid"}, {n:"Stealth", c:"ffffff", s:"solid", off:true},
+];
+const SW = ["ff0000","ff7a00","ffd400","3ddc84","00e5ff","3aa0ff","7a3dff","ff3dbe","ffffff"];
+function fillLights(){
+  const p = S.p5 || {};
+  $("#l-enable").checked = p.rgb_enable !== false;
+  $("#l-color").value = "#"+String(p.rgb_color||"3aa0ff").replace("#","");
+  $("#l-bright").value = p.rgb_brightness ?? 50; $("#l-speed").value = p.rgb_speed ?? 50;
+  $("#l-count").value = p.rgb_led_count ?? 4;
+  $("#l-style").innerHTML = S.rgb_styles.map(s=>`<button data-v="${s}">${s.replace("_"," ")}</button>`).join("");
+  seg("#l-style", p.rgb_style || "breathing", ledAnim);
+  seg("#l-fanled", p.gpio_fan_led || "on");
+  $("#swatches").innerHTML = SW.map(c=>`<button style="background:#${c}" data-c="${c}"></button>`).join("");
+  $$("#swatches button").forEach(b=>b.onclick=()=>{ $("#l-color").value="#"+b.dataset.c; ledAnim(); });
+  $("#scenes").innerHTML = SCENES.map((s,i)=>`<button class="preset" data-i="${i}"><b><span style="color:#${s.c}">●</span> ${s.n}</b><span>${s.off?"LEDs off":s.s}</span></button>`).join("");
+  $$("#scenes button").forEach(b=>b.onclick=()=>{ const s=SCENES[b.dataset.i];
+    act(b, "/api/p5", {changes: s.off ? {rgb_enable:false} : {rgb_enable:true, rgb_color:s.c, rgb_style:s.s}}, s.n+" applied"); });
+  ["#l-bright","#l-speed"].forEach(id=>{ const f=()=>{$(id+"-v").textContent=$(id).value+"%"; ledAnim();}; $(id).oninput=f; f(); });
+  $("#l-color").oninput = ledAnim; $("#l-enable").onchange = ledAnim;
+  ledAnim();
+}
+let ledTimer = null;
+function ledAnim(){
+  clearInterval(ledTimer);
+  const dots = $$("#ledPreview i"), on = $("#l-enable").checked, style = segVal("#l-style")||"solid";
+  const hex = $("#l-color").value, br = $("#l-bright").value/100, sp = $("#l-speed").value/100;
+  const rgb = [1,3,5].map(i=>parseInt(hex.substr(i,2),16));
+  let t = 0;
+  const paint = () => {
+    t += 0.05 + sp*0.25;
+    dots.forEach((d,i)=>{
+      if(!on){ d.style.background="#222"; d.style.boxShadow="none"; return; }
+      let c = rgb, k = 1;
+      if(style==="breathing") k = 0.15 + 0.85*(0.5+0.5*Math.sin(t));
+      if(style.startsWith("flow")){ const dir = style.endsWith("reverse")?-1:1; k = 0.15+0.85*Math.max(0,Math.sin(t - dir*i*0.9)); }
+      if(style.startsWith("rainbow")){ const dir = style.endsWith("reverse")?-1:1; c = hsl((t*40 + dir*i*90)%360); }
+      if(style==="hue_cycle") c = hsl((t*40)%360);
+      const f = k*Math.max(br,0.08), col = `rgb(${c.map(v=>Math.round(v*f)).join(",")})`;
+      d.style.background = col; d.style.boxShadow = `0 0 ${18*f}px ${col}`;
+    });
+  };
+  paint(); ledTimer = setInterval(paint, 60);
+}
+function hsl(h){ const f=n=>{const k=(n+h/30)%12; return 255*(0.5-0.5*Math.max(-1,Math.min(k-3,9-k,1)));}; return [f(0),f(8),f(4)]; }
+$("#l-apply").onclick = e => act(e.target, "/api/p5", {changes:{
+  rgb_enable: $("#l-enable").checked, rgb_color: $("#l-color").value.slice(1), rgb_style: segVal("#l-style"),
+  rgb_brightness: +$("#l-bright").value, rgb_speed: +$("#l-speed").value, rgb_led_count: +$("#l-count").value }}, "Lights updated");
+$("#l-fanled-apply").onclick = e => act(e.target, "/api/p5", {changes:{gpio_fan_led: segVal("#l-fanled")}}, "Fan LEDs updated");
+
+// ---------- fans
+const GPIO_MODES = [
+  [0,"Always on","Max airflow, always"],[1,"Performance","On at 50°C"],[2,"Cool","On at 60°C"],
+  [3,"Balanced","On at 67.5°C"],[4,"Quiet","On at 70°C"]];
+const FAN_INFO = {whisper:["Whisper","Quietest · barely spins below 71°C"], silent:["Silent","Very quiet · slow until 67°C"], quiet:["Quiet","Starts at 55°C"], stock:["Stock","Pi default: 50→75°C"], cool:["Cool","Starts at 42°C — good for overclocks"], max:["Max","Nearly always fast"], custom:["Custom","Set your own 4 points"]};
+function fillFans(){
+  $("#f-turbo").checked = !!S.settings.turbo_cooling;
+  seg("#f-limit", S.settings.cpu_limit || 0, v => act(null, "/api/cpu/limit", {mhz:+v}, +v ? `CPU capped at ${(v/1000).toFixed(1)} GHz` : "Full speed restored"));
+  const fc = S.settings.fan_curve || {preset:"stock"};
+  fanSel = fc.preset || "stock";
+  $("#f-presets").innerHTML = Object.entries(FAN_INFO).map(([k,v])=>`<button class="preset" data-k="${k}"><b>${v[0]}</b><span>${v[1]}</span></button>`).join("");
+  const pts = (fc.points && fc.preset==="custom") ? fc.points.map(p=>[p[0], Math.round(p[1]/255*100)]) : [[45,30],[55,55],[63,80],[70,100]];
+  $("#f-curve").innerHTML = "<b>Step</b><b>Temp °C</b><b>Speed %</b>" + pts.map((p,i)=>`<span>${i+1}</span><input type="number" min="25" max="85" step="0.5" value="${p[0]}" data-t="${i}"><input type="number" min="0" max="100" value="${p[1]}" data-s="${i}">`).join("");
+  const mark = () => { $$("#f-presets .preset").forEach(b=>b.classList.toggle("on", b.dataset.k===fanSel)); $("#f-custom").classList.toggle("hidden", fanSel!=="custom");
+    $("#f-curve-note").innerHTML = fanSel==="whisper" ? '<div class="note"><b>Whisper lets the Pi run in the 70s °C.</b> That\'s safe — the Pi slows itself down near 80–85°C — but avoid it with an overclock or long gaming sessions.</div>'
+      : fanSel==="silent" ? '<div class="note info">Silent runs a bit warmer than stock (60s °C) and is fine for everyday use.</div>' : ""; };
+  $$("#f-presets .preset").forEach(b=>b.onclick=()=>{ fanSel=b.dataset.k; mark(); }); mark();
+  gpioSel = (S.p5||{}).gpio_fan_mode ?? 0;
+  $("#f-gpio").innerHTML = GPIO_MODES.map(m=>`<button class="preset" data-m="${m[0]}"><b>${m[1]}</b><span>${m[2]}</span></button>`).join("");
+  const markG = () => $$("#f-gpio .preset").forEach(b=>b.classList.toggle("on", +b.dataset.m===+gpioSel));
+  $$("#f-gpio .preset").forEach(b=>b.onclick=()=>{ gpioSel=+b.dataset.m; markG(); }); markG();
+  fillSide();
+}
+
+// ---------- side fans: speed curve
+const SIDE_INFO = {whisper:["Whisper","Off below 60°C, slow until 74°C"], silent:["Silent","Off below 55°C, gentle"], balanced:["Balanced","Off below 50°C"], cool:["Cool","On from 42°C, for overclocks"], custom:["Custom","Your own 4 points"]};
+let scSel = "silent", sideMode = "pironman";
+function scPoints(){
+  if(scSel !== "custom") return S.side_presets[scSel];
+  return [0,1,2,3].map(i=>[+($(`[data-st="${i}"]`)||{}).value||0, +($(`[data-ss="${i}"]`)||{}).value||0]);
+}
+function fillSide(){
+  sideMode = S.settings.side_ctrl || "pironman";
+  const sc = S.settings.side_curve || {preset:"silent"};
+  scSel = sc.preset || "silent";
+  $("#sc-presets").innerHTML = Object.entries(SIDE_INFO).map(([k,v])=>`<button class="preset" data-k="${k}"><b>${v[0]}</b><span>${v[1]}</span></button>`).join("");
+  const pts = sc.points || S.side_presets.silent;
+  $("#sc-curve").innerHTML = "<b>Step</b><b>Temp °C</b><b>Speed %</b>" + pts.map((p,i)=>`<span>${i===0?"Start":i+1}</span><input type="number" min="25" max="85" step="0.5" value="${p[0]}" data-st="${i}"><input type="number" min="0" max="100" step="5" value="${p[1]}" data-ss="${i}">`).join("");
+  $$("#sc-curve input").forEach(i=>i.oninput=drawSide);
+  const mark = () => { $$("#sc-presets .preset").forEach(b=>b.classList.toggle("on", b.dataset.k===scSel)); $("#sc-custom").classList.toggle("hidden", scSel!=="custom"); drawSide(); };
+  $$("#sc-presets .preset").forEach(b=>b.onclick=()=>{ scSel=b.dataset.k; mark(); }); mark();
+  seg("#sc-hz", S.settings.side_pwm_hz || 50);
+  markSideMode();
+}
+function markSideMode(){
+  $$("[data-sc]").forEach(b=>b.classList.toggle("on", b.dataset.sc===sideMode));
+  $("#side-p5").classList.toggle("hidden", sideMode!=="pironman");
+  $("#side-pilot").classList.toggle("hidden", sideMode!=="pilot");
+  setTimeout(drawSide, 0);
+}
+$$("[data-sc]").forEach(b=>b.onclick=async ()=>{
+  const m = b.dataset.sc;
+  if(m === S.settings.side_ctrl){ sideMode = m; markSideMode(); return; }
+  if(m==="pilot" && !confirm(`Let Pilot run the side fans with a speed curve?\n\nSunFounder's software will be moved to spare pin GPIO${S.settings.side_park_pin||26} so it stops switching them. If you have something plugged into GPIO${S.settings.side_park_pin||26}, choose No.`)) return;
+  sideMode = m; markSideMode();
+  await act(b, "/api/fan/side", {mode: m, curve: {preset: scSel, points: scPoints()}, pwm_hz: +segVal("#sc-hz")}, m==="pilot" ? "Pilot now runs the side fans" : "Side fans handed back to SunFounder");
+});
+$("#sc-apply").onclick = e => act(e.target, "/api/fan/side", {mode:"pilot", curve:{preset: scSel, points: scPoints()}, pwm_hz: +segVal("#sc-hz")}, "Side-fan curve saved — live now");
+$("#sc-diag").onclick = async e => {
+  const r = await act(e.target, "/api/fan/side/diag", {});
+  if(r){ $("#sc-report").textContent = r.report; $("#sc-report").classList.remove("hidden"); $("#sc-copy").classList.remove("hidden"); }
+};
+$("#sc-copy").onclick = () => { const t=$("#sc-report").textContent;
+  (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(()=>toast("Report copied — paste it to Claude"),
+    ()=>{ const r=document.createRange(); r.selectNodeContents($("#sc-report")); getSelection().removeAllRanges(); getSelection().addRange(r); toast("Report selected — press Ctrl+C"); }); };
+$("#sc-try").oninput = () => $("#sc-try-v").textContent = $("#sc-try").value + "%";
+$("#sc-try-go").onclick = e => act(e.target, "/api/fan/side/test", {pct: +$("#sc-try").value}, `Running side fans at ${$("#sc-try").value}% for 10 s — listen and look`);
+
+function renderSide(){
+  const sd = S.side || {}, st = S.stats;
+  if(!$("#sc-now")) return;
+  $("#sc-now").textContent = sd.duty==null ? "--" : (sd.duty>0 ? sd.duty+"%" : "Off") + (sd.testing ? " (test)" : "");
+  $("#sc-method").textContent = sd.method==="pwm" ? "Speed control: PWM ✓" : sd.method==="onoff" ? "On/off only" + (sd.note ? " — " + sd.note : "") : (sd.running ? "starting…" : "not running");
+  let msg = "";
+  if(sd.error) msg = `<div class="note"><b>Problem:</b> ${sd.error}</div>`;
+  else if(sideMode==="pilot" && !sd.lgpio) msg = '<div class="note"><b>Partial speeds need python3-lgpio.</b> Run <code>sudo apt install python3-lgpio</code> and re-run install.sh. Until then the curve switches the fans fully on or off.</div>';
+  if($("#side-msg").dataset.m !== msg){ $("#side-msg").innerHTML = msg; $("#side-msg").dataset.m = msg; }
+  drawSide();
+}
+function drawSide(){
+  const c = $("#sc-graph"); if(!c || !c.clientWidth || !S) return;
+  const dpr = devicePixelRatio||1, w = c.clientWidth, h = c.clientHeight;
+  c.width = w*dpr; c.height = h*dpr; const g = c.getContext("2d"); g.scale(dpr,dpr);
+  const pad = {l:34, r:10, t:10, b:22}, T0 = 30, T1 = 85;
+  const X = t => pad.l + (t-T0)/(T1-T0)*(w-pad.l-pad.r), Y = p => h-pad.b - p/100*(h-pad.t-pad.b);
+  g.font = "11px system-ui"; g.fillStyle = "#8794a6"; g.strokeStyle = "#ffffff12";
+  for(let t=30;t<=80;t+=10){ g.beginPath(); g.moveTo(X(t),pad.t); g.lineTo(X(t),h-pad.b); g.stroke(); g.fillText(t+"°", X(t)-8, h-6); }
+  for(let p=0;p<=100;p+=50){ g.beginPath(); g.moveTo(pad.l,Y(p)); g.lineTo(w-pad.r,Y(p)); g.stroke(); g.fillText(p+"%", 2, Y(p)+4); }
+  const pts = scPoints(); if(!pts || !pts.length) return;
+  const acc = getComputedStyle(document.documentElement).getPropertyValue("--accent").trim() || "#3aa0ff";
+  g.strokeStyle = acc; g.lineWidth = 2.5; g.beginPath();
+  g.moveTo(X(T0), Y(0)); g.lineTo(X(pts[0][0]), Y(0)); g.lineTo(X(pts[0][0]), Y(pts[0][1]));
+  pts.forEach(p=>g.lineTo(X(p[0]), Y(p[1]))); g.lineTo(X(T1), Y(pts[pts.length-1][1])); g.stroke();
+  g.fillStyle = acc; pts.forEach(p=>{ g.beginPath(); g.arc(X(p[0]),Y(p[1]),4,0,7); g.fill(); });
+  const t = S.stats.temp;
+  if(t!=null){ g.strokeStyle = "#ff8a3d"; g.lineWidth = 1.5; g.setLineDash([4,4]); g.beginPath(); g.moveTo(X(t),pad.t); g.lineTo(X(t),h-pad.b); g.stroke(); g.setLineDash([]); g.fillStyle="#ff8a3d"; g.fillText("now", X(t)+4, pad.t+10); }
+}
+$("#f-turbo").onchange = e => act(null, "/api/fan/turbo", {on: e.target.checked}, e.target.checked ? "Turbo cooling ON — fan at 100%" : "Turbo cooling off");
+$("#f-curve-apply").onclick = async e => {
+  const body = {preset: fanSel};
+  if(fanSel==="custom") body.points = [0,1,2,3].map(i=>[+$(`[data-t="${i}"]`).value, +$(`[data-s="${i}"]`).value]);
+  const r = await act(e.target, "/api/fan/curve", body, "Fan curve saved");
+  if(r && confirm("Fan curve saved. Reboot now so it takes effect?")) act(null, "/api/reboot", {}, "Rebooting…");
+};
+$("#f-silent").onclick = async e => {
+  const r = await act(e.target, "/api/fan/silent", {}, "Silent setup saved");
+  if(r && r.note) toast("Tower fan done, but side fans: " + r.note, true);
+  if(r && confirm("Silent setup saved. Reboot now so the quieter tower-fan curve takes effect?")) act(null, "/api/reboot", {}, "Rebooting…");
+};
+$("#f-gpio-apply").onclick = e => act(e.target, "/api/p5", {changes:{gpio_fan_mode: gpioSel}}, "Side-fan mode updated");
+
+// ---------- screen
+let oledMode = "pironman";
+function fillScreen(){
+  const p = S.p5 || {}, st = S.settings;
+  oledMode = st.oled_mode;
+  markMode();
+  $("#s-enable").checked = p.oled_enable !== false;
+  seg("#s-rot", p.oled_rotation ?? 0); seg("#s-unit", p.temperature_unit || st.unit || "C");
+  $("#s-sleep").value = [0,30,60,300,600,1800].includes(+p.oled_sleep_timeout) ? +p.oled_sleep_timeout : 0;
+  $("#s-pages").innerHTML = S.oled.pages.map(([id,label])=>`<div class="pagecard ${st.oled_pages.includes(id)?"on":""}" data-p="${id}"><div class="oled small"><img data-prev="${id}" alt=""></div><span><input type="checkbox" ${st.oled_pages.includes(id)?"checked":""}> ${label}</span></div>`).join("");
+  $$("#s-pages .pagecard").forEach(c=>c.onclick=ev=>{ const cb=c.querySelector("input"); if(ev.target!==cb) cb.checked=!cb.checked; c.classList.toggle("on", cb.checked); });
+  $("#s-text").value = st.oled_text || "";
+  $("#s-int").value = st.oled_interval; $("#s-con").value = st.oled_contrast;
+  const f1=()=>$("#s-int-v").textContent=$("#s-int").value+" s", f2=()=>$("#s-con-v").textContent=Math.round($("#s-con").value/2.55)+"%";
+  $("#s-int").oninput=f1; $("#s-con").oninput=f2; f1(); f2();
+  seg("#s-prot", st.oled_rotate); seg("#s-punit", st.unit || "C");
+  refreshPreviews();
+}
+function markMode(){
+  $$("#tab-screen [data-mode]").forEach(b=>b.classList.toggle("on", b.dataset.mode===oledMode));
+  $("#s-pironman").classList.toggle("hidden", oledMode!=="pironman");
+  $("#s-pilot").classList.toggle("hidden", oledMode!=="pilot");
+}
+$$("#tab-screen [data-mode]").forEach(b=>b.onclick=async ()=>{
+  if(b.dataset.mode===S.settings.oled_mode){ oledMode=b.dataset.mode; markMode(); return; }
+  oledMode = b.dataset.mode; markMode();
+  await act(b, "/api/oled", {mode: oledMode}, oledMode==="pilot" ? "Pilot now drives the screen" : "SunFounder pages restored");
+});
+function refreshPreviews(){
+  if(!S || !S.oled.pil) return;
+  const stamp = Date.now();
+  $$("img[data-prev]").forEach(img=>img.src=`/api/oled/preview?page=${img.dataset.prev}&t=${TOKEN}&_=${stamp}`);
+}
+setInterval(()=>{ if($("#tab-screen").classList.contains("on")) refreshPreviews(); }, 3000);
+$("#s-apply").onclick = e => act(e.target, "/api/oled", {mode:"pironman", unit: segVal("#s-unit"), p5:{
+  oled_enable: $("#s-enable").checked, oled_rotation: +segVal("#s-rot"), oled_sleep_timeout: +$("#s-sleep").value,
+  temperature_unit: segVal("#s-unit") }}, "Screen settings applied");
+$("#s-papply").onclick = e => act(e.target, "/api/oled", {mode:"pilot",
+  oled_pages: $$("#s-pages .pagecard").filter(c=>c.querySelector("input").checked).map(c=>c.dataset.p),
+  oled_text: $("#s-text").value, oled_interval: +$("#s-int").value, oled_contrast: +$("#s-con").value,
+  oled_rotate: +segVal("#s-prot"), unit: segVal("#s-punit") }, "Pages saved");
+
+// ---------- overclock
+const OC_INFO = {stock:["Stock","2.4 GHz · no extra volts"], mild:["Mild","2.6 GHz · almost every Pi 5"], strong:["Strong","2.8 GHz · most Pi 5s"], max:["Max","3.0 GHz · good chips only"]};
+function fillOC(){
+  const pr = S.oc.presets, cfg = S.oc.configured, run = S.oc.running;
+  $("#oc-presets").innerHTML = Object.entries(OC_INFO).map(([k,v])=>`<button class="preset" data-k="${k}"><b>${v[0]}</b><span>${v[1]}</span></button>`).join("");
+  const set = v => { $("#oc-arm").value=v.arm; $("#oc-gpu").value=v.gpu; $("#oc-ovd").value=v.ovd; ocSliders(); };
+  $$("#oc-presets .preset").forEach(b=>b.onclick=()=>{ ocSel=b.dataset.k; set(pr[ocSel]); });
+  set(cfg && cfg.arm ? cfg : {arm: run.arm || 2400, gpu: run.gpu || 910, ovd: run.ovd || 0});
+  ["#oc-arm","#oc-gpu","#oc-ovd"].forEach(id=>$(id).oninput=()=>{ ocSel=null; ocSliders(); });
+}
+function ocSliders(){
+  const a=+$("#oc-arm").value, g=+$("#oc-gpu").value, o=+$("#oc-ovd").value;
+  $("#oc-arm-v").textContent = (a/1000).toFixed(2)+" GHz"; $("#oc-gpu-v").textContent = g+" MHz"; $("#oc-ovd-v").textContent = "+"+(o/1000)+" mV";
+  const match = Object.entries(S.oc.presets).find(([k,v])=>v.arm===a&&v.gpu===g&&v.ovd===o);
+  $$("#oc-presets .preset").forEach(b=>b.classList.toggle("on", match && b.dataset.k===match[0]));
+  let w = "";
+  if(S.settings.cpu_limit) w += `<div class="note"><b>The CPU speed limit is on (${(S.settings.cpu_limit/1000).toFixed(1)} GHz).</b> Set it back to “Full speed” on the Fans tab before testing an overclock.</div>`;
+  if(a > 3000) w += '<div class="note"><b>Above 3.0 GHz is experimental.</b> Needs up-to-date Pi firmware (sudo apt full-upgrade) and a lucky chip. Use the safe test.</div>';
+  if(o >= 60000) w += '<div class="note"><b>High voltage boost.</b> More heat and more wear. Keep turbo cooling on and watch temps.</div>';
+  if(a > 2400 && (S.settings.fan_curve||{}).preset === "stock") w += '<div class="note info">Tip: set the tower fan curve to <b>Cool</b> on the Fans tab for overclocking.</div>';
+  $("#oc-warn").innerHTML = w;
+}
+function ocBody(){ return {arm:+$("#oc-arm").value, gpu:+$("#oc-gpu").value, ovd:+$("#oc-ovd").value, label: ocSel||"custom"}; }
+function renderOC(){
+  const r = S.oc.running, cfg = S.oc.configured, p = S.oc.pending, st = S.stats;
+  $("#oc-run-arm").textContent = r.arm ? r.arm+" MHz" : "--";
+  $("#oc-run-gpu").textContent = r.gpu ? r.gpu+" MHz" : "--";
+  $("#oc-run-ovd").textContent = r.ovd!=null ? "+"+(r.ovd/1000)+" mV" : "--";
+  $("#oc-conf").textContent = cfg && cfg.arm ? `${cfg.arm} / ${cfg.gpu} MHz` : "stock";
+  $("#oc-volts").textContent = st.volts ? st.volts.toFixed(3)+" V" : "--";
+  $("#oc-temp").textContent = C2(st.temp);
+  let b = "";
+  if(p){
+    const spec = `${(p.arm/1000).toFixed(2)} GHz · GPU ${p.gpu} · +${p.ovd/1000} mV`;
+    if(p.status==="booted") b = `<div class="note good" style="margin-bottom:14px"><b>✔ Test boot worked: ${spec}.</b><br>Run the stability test below (3–10 min). If it passes, press Keep — otherwise reboot to go back to normal.<div class="row"><button class="btn" id="oc-keep">Keep this overclock</button><button class="btn ghost" id="oc-discard">Throw it away</button></div></div>`;
+    else if(p.status==="fell_back") b = `<div class="note" style="margin-bottom:14px"><b>The test boot of ${spec} didn't stick</b> — the Pi came back on normal settings. Try a lower speed or a little more voltage boost.<div class="row"><button class="btn ghost" id="oc-discard">OK</button></div></div>`;
+    else if(p.status==="expired") b = `<div class="note" style="margin-bottom:14px"><b>You rebooted before pressing Keep</b>, so the Pi is back on normal settings (${spec} was not saved).<div class="row"><button class="btn ghost" id="oc-discard">OK</button></div></div>`;
+    else b = `<div class="note info" style="margin-bottom:14px"><b>Waiting for the test reboot (${spec})…</b></div>`;
+  }
+  if($("#oc-banner").dataset.html !== b){ $("#oc-banner").innerHTML = b; $("#oc-banner").dataset.html = b;
+    const k=$("#oc-keep"), d=$("#oc-discard");
+    if(k) k.onclick = e => act(e.target, "/api/oc/keep", {}, "Overclock saved permanently 🎉");
+    if(d) d.onclick = e => act(e.target, "/api/oc/discard", {}, "Cleared");
+  }
+}
+$("#oc-test").onclick = async e => {
+  const b = ocBody();
+  if(!confirm(`Reboot into a one-time test at ${(b.arm/1000).toFixed(2)} GHz?\n\nIf it doesn't come back within 2 minutes, unplug and replug the power — it will boot normally.`)) return;
+  const r = await act(e.target, "/api/oc/test", b);
+  if(r) toast("Rebooting into test mode… this page reconnects by itself.");
+};
+$("#oc-direct").onclick = async e => {
+  const b = ocBody();
+  if(!confirm(`Write ${(b.arm/1000).toFixed(2)} GHz straight into config.txt with NO safety net?\n\nIf it won't boot you'll have to edit config.txt on the SD card from another computer.`)) return;
+  const r = await act(e.target, "/api/oc/direct", b, "Saved to config.txt");
+  if(r && confirm("Reboot now?")) act(null, "/api/reboot", {}, "Rebooting…");
+};
+$("#oc-stock").onclick = async e => {
+  if(!confirm("Remove Pilot's overclock and go back to stock 2.4 GHz?")) return;
+  const r = await act(e.target, "/api/oc/stock", {}, "Back to stock");
+  if(r && confirm("Reboot now to finish?")) act(null, "/api/reboot", {}, "Rebooting…");
+};
+$("#oc-reboot").onclick = e => { if(confirm("Reboot the Pi now?")) act(e.target, "/api/reboot", {}, "Rebooting…"); };
+
+// ---------- stability test
+seg("#t-dur", 180);
+$("#t-start").onclick = e => act(e.target, "/api/test/start", {seconds: +segVal("#t-dur")}, "Test started — all cores at 100%");
+$("#t-stop").onclick = e => act(e.target, "/api/test/stop", {}, "Stopping…");
+function renderTest(){
+  const t = S.test || {};
+  $("#t-start").classList.toggle("hidden", !!t.running); $("#t-stop").classList.toggle("hidden", !t.running);
+  if(!t.start){ return; }
+  pct("#t-prog", t.running ? t.elapsed/t.duration*100 : 100);
+  const facts = `Hottest ${C2(t.max_temp)} · lowest clock ${t.min_freq||"--"} MHz` + (t.flags && t.flags.length ? " · flags: "+t.flags.join(", ") : "");
+  if(t.running){ $("#t-out").innerHTML = `Running… ${t.elapsed}s / ${t.duration}s<br>${facts}`; return; }
+  const V = {
+    pass: ['good','PASSED', 'No maths errors, no throttling. This speed looks stable.'],
+    unstable: ['bad','FAILED', `${t.errors||0} calculation error(s)${t.crashed? ", "+t.crashed+" worker(s) crashed":""}. Lower the clock or add a little voltage boost.`],
+    hot: ['warn','TOO HOT', 'Maths was fine but the Pi throttled. Turn on turbo cooling / Cool fan curve, or lower the clock.'],
+    power: ['warn','POWER DIP', 'Under-voltage seen. Use the official 27 W (5 V 5 A) power supply.'],
+    cancelled: ['dim','STOPPED', 'Test was stopped early.'] }[t.result] || ['dim','…',''];
+  $("#t-out").innerHTML = `<span class="pill ${V[0]}">${V[1]}</span> at ${t.arm||"?"} MHz — ${V[2]}<br>${facts}`;
+}
+
+function fillForms(){ fillLights(); fillFans(); fillScreen(); fillOC(); }
+poll(); setInterval(poll, 1500);
+addEventListener("resize", ()=>S && drawSpark());
+</script>
+</body>
+</html>
