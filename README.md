@@ -1,5 +1,7 @@
 # Pironman Pilot
 
+![Pironman Pilot](screenshot.png)
+
 A control center for the **SunFounder Pironman 5 MAX** case on a **Raspberry Pi 5**.
 
 | Tab | What you can do |
@@ -51,3 +53,10 @@ bash uninstall.sh
 ```
 
 Removes the app and takes Pilot's overclock / fan-curve lines out of `config.txt` (backup kept). Reboot to be back on stock clocks.
+
+## Screenshots
+| | |
+|---|---|
+| ![Fans](screenshots/fans.png) | ![Side-fan speed curve](screenshots/side-fans.png) |
+| ![Lights](screenshots/lights.png) | ![OLED pages](screenshots/oled.png) |
+| ![Overclock](screenshots/overclock.png) | |
